@@ -1,9 +1,9 @@
 import "dotenv/config";
 import "@nomiclabs/hardhat-ethers";
-import "@nomiclabs/hardhat-ethers";
+import "@nomicfoundation/hardhat-verify";
 import "hardhat-deploy";
 
-const accounts = {
+const accounts = process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : {
   mnemonic:
     process.env.MNEMONIC ||
     "test test test test test test test test test test test junk",
@@ -12,6 +12,20 @@ const accounts = {
 
 const config = {
   networks: {
+    blast: {
+      url: 'https://rpc.blast.io',
+      accounts,
+      chainId: 81457,
+      live: true,
+      saveDeployments: true
+    },
+    "blast-testnet": {
+      url: 'https://sepolia.blast.io',
+      accounts,
+      chainId: 168587773,
+      live: true,
+      saveDeployments: true
+    },
     base: {
       url: "https://developer-access-mainnet.base.org",
       accounts,
@@ -187,7 +201,23 @@ const config = {
           apiURL: 'https://api.scrollscan.com/api',
           browserURL: 'https://scrollscan.com/',
         }
-      }
+      },
+      {
+        network: 'blast',
+        chainId: 81457,
+        urls: {
+          apiURL: 'https://api.blastscan.io/api',
+          browserURL: 'https://blastscan.io',
+        },
+      },
+      {
+        network: 'blast-testnet',
+        chainId: 168587773,
+        urls: {
+          apiURL: "https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan",
+          browserURL: "https://testnet.blastscan.io"
+        },
+      },
     ],
     apiKey: {
       mainnet: process.env.ETHERSCAN_API_KEY || '',
@@ -231,12 +261,14 @@ const config = {
       auroraTestnet: 'api-key',
       metis: 'api-key',
       kava: 'api-key',
+      'blast-testnet': 'api-key',
       // bobaAvax: 'api-key',
       bttc: process.env.BTTC_API_KEY || '',
       gnosis: process.env.GNOSIS_API_KEY || '',
       linea: process.env.LINEA_API_KEY || '',
       polygonzkevm: process.env.POLYGON_ZKEVM_API_KEY || '',
-      scroll: process.env.SCROLL_API_KEY || ''
+      scroll: process.env.SCROLL_API_KEY || '',
+      blast: process.env.BLAST_API_KEY || '',
     },
   },
 };

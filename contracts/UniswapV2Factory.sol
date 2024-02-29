@@ -13,10 +13,13 @@ contract UniswapV2Factory is IUniswapV2Factory {
     mapping(address => mapping(address => address)) public override getPair;
     address[] public override allPairs;
 
+    IBlast public constant blast = IBlast(0x4300000000000000000000000000000000000002);
+
     event PairCreated(address indexed token0, address indexed token1, address pair, uint);
 
     constructor(address _feeToSetter) public {
         feeToSetter = _feeToSetter;
+        blast.configure(IBlast.YieldMode.VOID, IBlast.GasMode.CLAIMABLE, _feeToSetter);
     }
 
     function allPairsLength() external override view returns (uint) {

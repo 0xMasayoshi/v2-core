@@ -5,6 +5,9 @@ pragma solidity =0.6.12;
 import './UniswapV2ERC20.sol';
 import './libraries/Math.sol';
 import './libraries/UQ112x112.sol';
+import './interfaces/IBlast.sol';
+import './interfaces/IBlastPoints.sol';
+import './interfaces/IERC20Rebasing.sol';
 import './interfaces/IERC20.sol';
 import './interfaces/IUniswapV2Factory.sol';
 import './interfaces/IUniswapV2Callee.sol';
@@ -20,6 +23,12 @@ contract UniswapV2Pair is UniswapV2ERC20 {
 
     uint public constant MINIMUM_LIQUIDITY = 10**3;
     bytes4 private constant SELECTOR = bytes4(keccak256(bytes('transfer(address,uint256)')));
+
+    IBlast constant blast = IBlast(0x4300000000000000000000000000000000000002);
+    IBlastPoints constant blastPoints = IBlastPoints(0x2536FE9ab3F511540F2f9e2eC2A805005C3Dd800);
+
+    IERC20Rebasing constant usdb = IERC20Rebasing(0x4300000000000000000000000000000000000003);
+    IERC20Rebasing constant weth = IERC20Rebasing(0x4300000000000000000000000000000000000004);
 
     address public factory;
     address public token0;
@@ -66,6 +75,18 @@ contract UniswapV2Pair is UniswapV2ERC20 {
 
     constructor() public {
         factory = msg.sender;
+
+        blast.configure(IBlast.YieldMode.VOID, IBlast.GasMode.CLAIMABLE, IUniswapV2Factory(factory).feeToSetter());
+        blastPoints.configurePointsOperator(0x5a16b92a1eC707793171b678eBEd9B5Ae52978a6);
+
+        usdb.configure(IERC20Rebasing.YieldMode.CLAIMABLE);
+        weth.configure(IERC20Rebasing.YieldMode.CLAIMABLE);
+    }
+
+    function claimAllYield(address recipient) external {
+        require(msg.sender == IUniswapV2Factory(factory).feeToSetter(), 'UniswapV2: FORBIDDEN');
+        usdb.claim(recipient, usdb.getClaimableAmount(address(this)));
+        weth.claim(recipient, weth.getClaimableAmount(address(this)));
     }
 
     // called once by the factory at time of deployment
